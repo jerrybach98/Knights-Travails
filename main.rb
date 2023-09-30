@@ -17,12 +17,15 @@
 # current_move = remove from queue for further analysis 
 # try each possible move on removed queue node
 # add moves to queue with answer between 0  - 7
-# find a way to track this path 
+
+
+# track node by going in reverse order, go from destination node to parent
 
 
 # if 1 path doesn't work, clear the queue,
 # path 1 should equal = [2, 1], [1, 2]
-# check for 2 length path and so on
+# start by making 0,0 the root 
+# make [2, 1], [1, 2] children of 0, 0
 
 
 
@@ -36,7 +39,7 @@ class Game
   end
 
   def build_tree(start, destination, possible_moves)
-    root = Knight.new(start)
+    @root = Knight.new(start, nil)
     @queue.push(root.data)
 
     if start == destination
@@ -45,19 +48,24 @@ class Game
 
     until @queue.empty?
       p @queue
-      position = @queue.shift
+      current_position = @queue.shift
+      break if @queue.include?(destination)
+
       @possible_moves.each do |move|
-        new_position = [position[0] + move[0], position[1] + move[1]]
+        new_position = [current_position[0] + move[0], current_position[1] + move[1]]
         if new_position[0].between?(0, 7) == true && new_position[1].between?(0, 7)
-          root.moves = Knight.new(new_position)
-          @queue.push(root.moves.data)
+          current_node = @root
+          current_node = current_node.moves until current_node.moves.nil?
+          current_node.moves = Knight.new(new_position, nil)
+          @queue.push(current_node.moves.data)
         end
       end
 
-      break if position == destination
+     # break if current_position == destination
     end
 
-    return position
+    p @root
+    return current_position
   end
 
 
@@ -73,11 +81,11 @@ class Knight
 attr_accessor :data, :moves
 
 
-  def initialize(data)
+  def initialize(data = nil, moves = nil)
     @data = data
-    @moves = nil
+    @moves = moves
   end
 end
 
 game = Game.new
-game.knight_moves([0,0], [3,3])
+game.knight_moves([0,0], [1,2])
