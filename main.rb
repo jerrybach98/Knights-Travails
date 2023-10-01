@@ -25,7 +25,10 @@
 # if 1 path doesn't work, clear the queue,
 # path 1 should equal = [2, 1], [1, 2]
 # start by making 0,0 the root 
-# make [2, 1], [1, 2] children of 0, 0
+# make [2, 1], [1, 2] children of 0, 0 to both equal nil
+
+# pass the actual node?
+
 
 
 
@@ -35,43 +38,56 @@ class Game
   def initialize()
     @possible_moves = [[2, 1], [1, 2], [2, -1], [1, -2], [-2, 1], [-1, 2], [-2, -1], [-1, -2]]
     @root = nil
-    @queue = []
   end
 
-  def build_tree(start, destination, possible_moves)
+  def build_tree(start, destination)
     @root = Knight.new(start, nil)
-    @queue.push(root.data)
+    queue = [@root]
 
-    if start == destination
-      return root.data
-    end
+    until queue.empty?
+      current_position = queue.shift
+      position_data = current_position.data
 
-    until @queue.empty?
-      p @queue
-      current_position = @queue.shift
-      break if @queue.include?(destination)
+      current_position.moves = []
 
       @possible_moves.each do |move|
-        new_position = [current_position[0] + move[0], current_position[1] + move[1]]
+        new_position = [position_data[0] + move[0], position_data[1] + move[1]]
         if new_position[0].between?(0, 7) == true && new_position[1].between?(0, 7)
-          current_node = @root
-          current_node = current_node.moves until current_node.moves.nil?
-          current_node.moves = Knight.new(new_position, nil)
-          @queue.push(current_node.moves.data)
+          new_move = Knight.new(new_position, nil)
+          current_position.moves << new_move
+          queue.push(new_move)
+          if new_position == destination
+            return @root
+          end
         end
       end
 
-     # break if current_position == destination
     end
 
-    p @root
-    return current_position
+    return @root
+  end
+
+  def track_traversal(node = @root, destination)
+    return nil if node.nil?
+
+    queue = [node]
+    output = []
+    until queue.empty?
+      # Pull node out of queue to process children and value
+      current = queue.shift
+      output << current.data
+      # Queues data
+      queue << current.left unless current.left.nil?
+      queue << current.right unless current.right.nil?
+    end
+    output
   end
 
 
 
   def knight_moves(start, destination)
-    p build_tree(start, destination, @possible_moves)
+    p build_tree(start, destination)
+    #p track_traversal(node = @root, destination)
   end
   
 
@@ -88,4 +104,4 @@ attr_accessor :data, :moves
 end
 
 game = Game.new
-game.knight_moves([0,0], [1,2])
+game.knight_moves([0,0],[1,2])
