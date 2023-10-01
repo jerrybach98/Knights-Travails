@@ -76,18 +76,50 @@ class Game
       # Pull node out of queue to process children and value
       current = queue.shift
       output << current.data
-      # Queues data
+      
       queue << current.left unless current.left.nil?
       queue << current.right unless current.right.nil?
     end
     output
   end
 
+  def find(node = @root, destination)
+    return false if node.nil?
+
+    return if node.moves.nil?
+
+    return if destination == node.data
+
+    node.moves.each do |move|
+      result = find(move, destination)
+      return true if result
+    end
+  end
+
+  def depth(node = @root, counter = 0, destination)
+    return -1 if node.nil?
+
+    return counter if node.moves.nil?
+
+    return counter if node.data == destination
+
+    node.moves.each do |move|
+      level = depth(move, counter + 1, destination)
+      return level
+    end
+
+    counter
+  end
+
+  
+
 
 
   def knight_moves(start, destination)
     p build_tree(start, destination)
+    p find(node = @root, destination)
     #p track_traversal(node = @root, destination)
+    p depth(node = @root, counter = 0, destination)
   end
   
 
@@ -104,4 +136,4 @@ attr_accessor :data, :moves
 end
 
 game = Game.new
-game.knight_moves([0,0],[1,2])
+game.knight_moves([0,0],[9,9])
