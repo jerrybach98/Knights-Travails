@@ -26,9 +26,10 @@
 # path 1 should equal = [2, 1], [1, 2]
 # start by making 0,0 the root 
 # make [2, 1], [1, 2] children of 0, 0 to both equal nil
-
 # pass the actual node?
 
+# if node.data matches destination
+# push all node.data to array 
 
 
 
@@ -38,6 +39,7 @@ class Game
   def initialize()
     @possible_moves = [[2, 1], [1, 2], [2, -1], [1, -2], [-2, 1], [-1, 2], [-2, -1], [-1, -2]]
     @root = nil
+    @path = []
   end
 
   def build_tree(start, destination)
@@ -68,19 +70,21 @@ class Game
   end
 
   def track_traversal(node = @root, destination)
-    return nil if node.nil?
-
-    queue = [node]
-    output = []
-    until queue.empty?
-      # Pull node out of queue to process children and value
-      current = queue.shift
-      output << current.data
-      
-      queue << current.left unless current.left.nil?
-      queue << current.right unless current.right.nil?
+    # return if node.nil?
+    if node.moves.nil?
+      return
     end
-    output
+
+    @path << node.data
+
+    return if node.data == destination
+
+
+    node.moves.each do |move|
+      result = track_traversal(move, destination)
+      return result if result != nil
+    end
+    @path << destination
   end
 
   def find(node = @root, destination)
@@ -92,7 +96,7 @@ class Game
 
     node.moves.each do |move|
       result = find(move, destination)
-      return true if result
+      return true if result != nil
     end
   end
 
@@ -111,15 +115,16 @@ class Game
     counter
   end
 
-  
-
 
 
   def knight_moves(start, destination)
-    p build_tree(start, destination)
-    p find(node = @root, destination)
-    #p track_traversal(node = @root, destination)
-    p depth(node = @root, counter = 0, destination)
+    build_tree(start, destination)
+    move_count = depth(node = @root, counter = 0, destination)
+    puts "You made it in #{move_count} moves! Here's your path: "
+    path = track_traversal(node = @root, destination)
+    path.each do |position|
+      p position
+    end
   end
   
 
@@ -136,4 +141,4 @@ attr_accessor :data, :moves
 end
 
 game = Game.new
-game.knight_moves([0,0],[9,9])
+game.knight_moves([0,0],[7,7])
