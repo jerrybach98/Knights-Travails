@@ -1,14 +1,13 @@
-#find the parent of the destination node with the find method
+# find the parent of the destination node with the find method
 # find the parent of the parent until nil
 
-# set the node creation smaller 
+# set the node creation smaller
 # level order traversal until we find the destination
 # put items into a queue
 # return the all the parents from there with our find parent combo method
 
 # possible ways
 # implement a depth of moves variable?
-
 
 # traverse the tree of 2 to 3,000 nodes in level order
 # add every node to array in level order
@@ -17,20 +16,31 @@
 # Find that destination node on the original tree, which also contains parent and array values
 # find the parents of that node recursively
 
-
 class Game
   attr_accessor :root
 
-  def initialize()
+  def initialize
     @possible_moves = [[2, 1], [1, 2], [2, -1], [1, -2], [-2, 1], [-1, 2], [-2, -1], [-1, -2]]
     @root = nil
     @path = []
   end
 
-  def build_tree(start, destination, nodes = 0)
+  def knight_moves(start, destination)
+    build_tree(start, destination, nodes = 0)
+    print = level_order(node = @root, destination)
+    move_count = print.count - 1
+    puts 'knight_moves([0,0],[7,7])'
+    puts "You made it in #{move_count} moves! Here's your path: "
+    print.each do |square|
+      p square
+    end
+  end
+
+  private
+
+  def build_tree(start, _destination, nodes = 0)
     @root = Knight.new(nil, start)
     queue = [@root]
-  
 
     until queue.empty?
       current_position = queue.shift
@@ -40,22 +50,22 @@ class Game
 
       @possible_moves.each do |move|
         new_position = [position_data[0] + move[0], position_data[1] + move[1]]
-        if new_position[0].between?(0, 7) == true && new_position[1].between?(0, 7)
-        #array value new_move = Knight.new(position_data, new_position, nil)
-          new_move = Knight.new(current_position, new_position, nil)
-          current_position.moves << new_move
-          queue.push(new_move)
-          nodes += 1
-          return @root if nodes == 3000
+        next unless new_position[0].between?(0, 7) == true && new_position[1].between?(0, 7)
+
+        # array value new_move = Knight.new(position_data, new_position, nil)
+        new_move = Knight.new(current_position, new_position, nil)
+        current_position.moves << new_move
+        queue.push(new_move)
+        nodes += 1
+        return @root if nodes == 3000
         #  if new_move.data == destination
         #    return @root
         #  end
-        end
       end
 
     end
 
-    return @root
+    @root
   end
 
   # Display tree in level order until destination is found
@@ -69,37 +79,29 @@ class Game
     until move_queue.empty?
       current = move_queue.shift
 
-      if current.moves != nil
+      next if current.moves.nil?
 
-        current.moves.each do |move|
+      current.moves.each do |move|
         output << move
-      #data  output << move.data
-        move_queue << move unless current.moves.nil?# || move.data == destination
+        # data  output << move.data
+        move_queue << move unless current.moves.nil? # || move.data == destination
 
         if move.data == destination
           move_queue.clear
           break
         end
-      
-        end
       end
     end
 
-  # p output
-  correct_node = output.last
-  find(node = @root, correct_node)
-  path = find_parent(node = @root, correct_node)
-  path.unshift(destination)
+    # p output
+    correct_node = output.last
+    find(node = @root, correct_node)
+    path = find_parent(node = @root, correct_node)
+    path.unshift(destination).reverse
   end
 
-  #<Knight:0x00007f10ef947b98 @parent=nil, @data=[0, 0], @moves=[#<Knight:0x00007f10ef9479b8 @parent=[0, 0], @data=[2, 1], @moves=[#<Knight:0x00007f10ef947788 @parent=[2, 1], @data=[4, 2], @moves=nil>, #<Knight:0x00007f10ef947738 @parent=[2, 1], @data=[3, 3], @moves=nil>, #<Knight:0x00007f10ef9476e8 @parent=[2, 1], @data=[4, 0], @moves=nil>, #<Knight:0x00007f10ef947670 @parent=[2, 1], @data=[0, 2], @moves=nil>, #<Knight:0x00007f10ef947620 @parent=[2, 1], @data=[1, 3], @moves=nil>, #<Knight:0x00007f10ef9475d0 @parent=[2, 1], @data=[0, 0], @moves=nil>]>, #<Knight:0x00007f10ef947918 @parent=[0, 0], @data=[1, 2], @moves=nil>]>
-#[[2, 1], [1, 2], [4, 2], [3, 3], [4, 0], [0, 2], [1, 3], [0, 0]]
-
-
-  def find_parent (node = @root, correct_node)
-    if correct_node.parent.nil?
-      return @path 
-    end
+  def find_parent(_node = @root, correct_node)
+    return @path if correct_node.parent.nil?
 
     parent = find(node = @root, correct_node)
     @path << parent.data
@@ -110,47 +112,23 @@ class Game
   # Look for destination node from the end of level order traversal on the original tree
   # Returns the node from the original tree with access to array value and parent data
   def find(node = @root, correct_node)
-    if node.nil?
-      return nil 
-    end
+    return nil if node.nil?
 
-    if correct_node == node
-      return node.parent
-    end
+    return node.parent if correct_node == node
 
-    if node.moves.nil?
-      return nil
-    end
+    return nil if node.moves.nil?
 
     node.moves.each do |move|
       result = find(move, correct_node)
-      if result != nil
-        return result 
-      end
+      return result unless result.nil?
     end
 
     nil
-
   end
-
-  def knight_moves(start, destination)
-     build_tree(start, destination, nodes = 0)
-    #puts "You made it in #{move_count} moves! Here's your path: "
-    #p find(node = @root, destination)
-    p level_order(node = @root, destination)
-    #track_traversal(node = @root, destination)
-    #p @path
-    #path.each do |position|
-    #  p position
-    #end
-  end
-  
-
 end
 
 class Knight
-attr_accessor :parent, :data, :moves
-
+  attr_accessor :parent, :data, :moves
 
   def initialize(parent = nil, data = nil, moves = nil)
     @parent = parent
@@ -160,5 +138,4 @@ attr_accessor :parent, :data, :moves
 end
 
 game = Game.new
-game.knight_moves([0,0],[7,7])
-
+game.knight_moves([0, 0], [7, 7])
