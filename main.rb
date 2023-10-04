@@ -10,6 +10,14 @@
 # implement a depth of moves variable?
 
 
+# traverse the tree of 2 to 3,000 nodes in level order
+# add every node to array in level order
+# Stop adding nodes to array in level order once the destination is found
+# destination node will be at end of array
+# Find that destination node on the original tree, which also contains parent and array values
+# find the parents of that node recursively
+
+
 class Game
   attr_accessor :root
 
@@ -33,11 +41,12 @@ class Game
       @possible_moves.each do |move|
         new_position = [position_data[0] + move[0], position_data[1] + move[1]]
         if new_position[0].between?(0, 7) == true && new_position[1].between?(0, 7)
-          new_move = Knight.new(position_data, new_position, nil)
+        #array value new_move = Knight.new(position_data, new_position, nil)
+          new_move = Knight.new(current_position, new_position, nil)
           current_position.moves << new_move
           queue.push(new_move)
           nodes += 1
-          return @root if nodes == 4
+          return @root if nodes == 3000
         #  if new_move.data == destination
         #    return @root
         #  end
@@ -49,6 +58,7 @@ class Game
     return @root
   end
 
+  # Display tree in level order until destination is found
   def level_order(node = @root, destination)
     return nil if node.nil?
 
@@ -62,75 +72,69 @@ class Game
       if current.moves != nil
 
         current.moves.each do |move|
-        output << move.data
-      
-        move_queue << move unless current.moves.nil?  || move.data == destination
+        output << move
+      #data  output << move.data
+        move_queue << move unless current.moves.nil?# || move.data == destination
+
+        if move.data == destination
+          move_queue.clear
+          break
+        end
       
         end
       end
     end
-   output
+
+  # p output
+  correct_node = output.last
+  find(node = @root, correct_node)
+  path = find_parent(node = @root, correct_node)
+  path.unshift(destination)
   end
 
   #<Knight:0x00007f10ef947b98 @parent=nil, @data=[0, 0], @moves=[#<Knight:0x00007f10ef9479b8 @parent=[0, 0], @data=[2, 1], @moves=[#<Knight:0x00007f10ef947788 @parent=[2, 1], @data=[4, 2], @moves=nil>, #<Knight:0x00007f10ef947738 @parent=[2, 1], @data=[3, 3], @moves=nil>, #<Knight:0x00007f10ef9476e8 @parent=[2, 1], @data=[4, 0], @moves=nil>, #<Knight:0x00007f10ef947670 @parent=[2, 1], @data=[0, 2], @moves=nil>, #<Knight:0x00007f10ef947620 @parent=[2, 1], @data=[1, 3], @moves=nil>, #<Knight:0x00007f10ef9475d0 @parent=[2, 1], @data=[0, 0], @moves=nil>]>, #<Knight:0x00007f10ef947918 @parent=[0, 0], @data=[1, 2], @moves=nil>]>
 #[[2, 1], [1, 2], [4, 2], [3, 3], [4, 0], [0, 2], [1, 3], [0, 0]]
 
 
-  def find_parent (node = @root, destination)
-    if destination == node.data
+  def find_parent (node = @root, correct_node)
+    if correct_node.parent.nil?
+      return @path 
+    end
+
+    parent = find(node = @root, correct_node)
+    @path << parent.data
+
+    find_parent(node = @root, parent)
+  end
+
+  # Look for destination node from the end of level order traversal on the original tree
+  # Returns the node from the original tree with access to array value and parent data
+  def find(node = @root, correct_node)
+    if node.nil?
       return nil 
     end
 
-    parent = find(node = @root, destination)
-    @path << parent
-
-    track_traversal(node = @root, parent)
-  end
-
-#  def find(node = @root, destination)
-#    if node.nil?
-#      return nil 
-#    end
-
-#    if destination == node.data
-#      return node.data
-#    end
-
-#    if node.moves.nil?
-#      return nil
-#    end
-
-#    node.moves.each do |move|
-#      result = find(move, destination)
-#      if result != nil
-#        return result 
-#      end
-#    end
-
-#    nil
-
-#  end
-
-  def depth(node = @root, counter = 0, destination)
-    return -1 if node.nil?
-
-    return counter if node.moves.nil?
-
-    return counter if destination == node.data
-
-    node.moves.each do |move|
-      level = depth(move, counter + 1, destination)
-      return level
+    if correct_node == node
+      return node.parent
     end
 
-  #  counter
+    if node.moves.nil?
+      return nil
+    end
+
+    node.moves.each do |move|
+      result = find(move, correct_node)
+      if result != nil
+        return result 
+      end
+    end
+
+    nil
+
   end
 
-
-
   def knight_moves(start, destination)
-    p build_tree(start, destination, nodes = 0)
-    #move_count = depth(node = @root, counter = 0, destination)
+     build_tree(start, destination, nodes = 0)
     #puts "You made it in #{move_count} moves! Here's your path: "
     #p find(node = @root, destination)
     p level_order(node = @root, destination)
@@ -156,5 +160,5 @@ attr_accessor :parent, :data, :moves
 end
 
 game = Game.new
-game.knight_moves([0,0],[2,1])
+game.knight_moves([0,0],[7,7])
 
