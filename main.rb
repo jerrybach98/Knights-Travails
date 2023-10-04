@@ -1,36 +1,13 @@
-# data structure similar to a binary tree: acyclic, undirected graph
-# can build root of tree from perspective knight start
-# each node represents position on chess board
-# potential moves as children to the root > each children has their own children
-# possible moves(routes) add and substract to the desired end code: this in return mirrors a chess board
-# each child has all possible moves 
-# moves can not be over 7 and under 0 
-# saved vertices (nodes) moved on
-# there are an infinite amount of ways to get to a node, save the one that takes the least edges or nodes moved
+#find the parent of the destination node with the find method
+# find the parent of the parent until nil
 
+# set the node creation smaller 
+# level order traversal until we find the destination
+# put items into a queue
+# return the all the parents from there with our find parent combo method
 
-
-
-# BFS you're checking all possible 1-long paths then if no solution, all possible 2-long paths then all 3-long then all 4-long etc.
-# until the queue is empty
-# add start to queue
-# current_move = remove from queue for further analysis 
-# try each possible move on removed queue node
-# add moves to queue with answer between 0  - 7
-
-
-# track node by going in reverse order, go from destination node to parent
-
-
-# if 1 path doesn't work, clear the queue,
-# path 1 should equal = [2, 1], [1, 2]
-# start by making 0,0 the root 
-# make [2, 1], [1, 2] children of 0, 0 to both equal nil
-# pass the actual node?
-
-# if node.data matches destination
-# push all node.data to array 
-
+# possible ways
+# implement a depth of moves variable?
 
 
 class Game
@@ -42,9 +19,10 @@ class Game
     @path = []
   end
 
-  def build_tree(start, destination)
-    @root = Knight.new(start, nil)
+  def build_tree(start, destination, nodes = 0)
+    @root = Knight.new(nil, start)
     queue = [@root]
+  
 
     until queue.empty?
       current_position = queue.shift
@@ -55,12 +33,14 @@ class Game
       @possible_moves.each do |move|
         new_position = [position_data[0] + move[0], position_data[1] + move[1]]
         if new_position[0].between?(0, 7) == true && new_position[1].between?(0, 7)
-          new_move = Knight.new(new_position, nil)
+          new_move = Knight.new(position_data, new_position, nil)
           current_position.moves << new_move
           queue.push(new_move)
-          if new_position == destination
-            return @root
-          end
+          nodes += 1
+          return @root if nodes == 4
+        #  if new_move.data == destination
+        #    return @root
+        #  end
         end
       end
 
@@ -69,76 +49,112 @@ class Game
     return @root
   end
 
-  def track_traversal(node = @root, destination)
-    # return if node.nil?
-    if node.moves.nil?
-      return
+  def level_order(node = @root, destination)
+    return nil if node.nil?
+
+    move_queue = [node]
+    output = []
+    finish = false
+
+    until move_queue.empty?
+      current = move_queue.shift
+
+      if current.moves != nil
+
+        current.moves.each do |move|
+        output << move.data
+      
+        move_queue << move unless current.moves.nil?  || move.data == destination
+      
+        end
+      end
     end
-
-    @path << node.data
-
-    return if node.data == destination
-
-
-    node.moves.each do |move|
-      result = track_traversal(move, destination)
-      return result if result != nil
-    end
-    @path << destination
+   output
   end
 
-  def find(node = @root, destination)
-    return false if node.nil?
+  #<Knight:0x00007f10ef947b98 @parent=nil, @data=[0, 0], @moves=[#<Knight:0x00007f10ef9479b8 @parent=[0, 0], @data=[2, 1], @moves=[#<Knight:0x00007f10ef947788 @parent=[2, 1], @data=[4, 2], @moves=nil>, #<Knight:0x00007f10ef947738 @parent=[2, 1], @data=[3, 3], @moves=nil>, #<Knight:0x00007f10ef9476e8 @parent=[2, 1], @data=[4, 0], @moves=nil>, #<Knight:0x00007f10ef947670 @parent=[2, 1], @data=[0, 2], @moves=nil>, #<Knight:0x00007f10ef947620 @parent=[2, 1], @data=[1, 3], @moves=nil>, #<Knight:0x00007f10ef9475d0 @parent=[2, 1], @data=[0, 0], @moves=nil>]>, #<Knight:0x00007f10ef947918 @parent=[0, 0], @data=[1, 2], @moves=nil>]>
+#[[2, 1], [1, 2], [4, 2], [3, 3], [4, 0], [0, 2], [1, 3], [0, 0]]
 
-    return if node.moves.nil?
 
-    return if destination == node.data
-
-    node.moves.each do |move|
-      result = find(move, destination)
-      return true if result != nil
+  def find_parent (node = @root, destination)
+    if destination == node.data
+      return nil 
     end
+
+    parent = find(node = @root, destination)
+    @path << parent
+
+    track_traversal(node = @root, parent)
   end
+
+#  def find(node = @root, destination)
+#    if node.nil?
+#      return nil 
+#    end
+
+#    if destination == node.data
+#      return node.data
+#    end
+
+#    if node.moves.nil?
+#      return nil
+#    end
+
+#    node.moves.each do |move|
+#      result = find(move, destination)
+#      if result != nil
+#        return result 
+#      end
+#    end
+
+#    nil
+
+#  end
 
   def depth(node = @root, counter = 0, destination)
     return -1 if node.nil?
 
     return counter if node.moves.nil?
 
-    return counter if node.data == destination
+    return counter if destination == node.data
 
     node.moves.each do |move|
       level = depth(move, counter + 1, destination)
       return level
     end
 
-    counter
+  #  counter
   end
 
 
 
   def knight_moves(start, destination)
-    build_tree(start, destination)
-    move_count = depth(node = @root, counter = 0, destination)
-    puts "You made it in #{move_count} moves! Here's your path: "
-    path = track_traversal(node = @root, destination)
-    path.each do |position|
-      p position
-    end
+    p build_tree(start, destination, nodes = 0)
+    #move_count = depth(node = @root, counter = 0, destination)
+    #puts "You made it in #{move_count} moves! Here's your path: "
+    #p find(node = @root, destination)
+    p level_order(node = @root, destination)
+    #track_traversal(node = @root, destination)
+    #p @path
+    #path.each do |position|
+    #  p position
+    #end
   end
   
 
 end
 
 class Knight
-attr_accessor :data, :moves
+attr_accessor :parent, :data, :moves
 
 
-  def initialize(data = nil, moves = nil)
+  def initialize(parent = nil, data = nil, moves = nil)
+    @parent = parent
     @data = data
     @moves = moves
   end
 end
 
 game = Game.new
-game.knight_moves([0,0],[7,7])
+game.knight_moves([0,0],[2,1])
+
