@@ -1,1 +1,2 @@
-# Knights-Travails
+Knight travails shows the shortest possible way to get from one square to another by outputting all squares the knight will stop on along the way. A tree will be generated with all possible moves the knight could make as children in a tree. The tree will represent a data structure similar to a binary tree except each node can have up to eight children; representing each direction a knight can move on a chess board. The tree is traversed in level order using a breadth-first search algorithm to find the minimum number of moves.
+

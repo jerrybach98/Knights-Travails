@@ -1,21 +1,4 @@
-# find the parent of the destination node with the find method
-# find the parent of the parent until nil
-
-# set the node creation smaller
-# level order traversal until we find the destination
-# put items into a queue
-# return the all the parents from there with our find parent combo method
-
-# possible ways
-# implement a depth of moves variable?
-
-# traverse the tree of 2 to 3,000 nodes in level order
-# add every node to array in level order
-# Stop adding nodes to array in level order once the destination is found
-# destination node will be at end of array
-# Find that destination node on the original tree, which also contains parent and array values
-# find the parents of that node recursively
-
+# Shows the shortest possible way a knight can get from one square to another on a chess board
 class Game
   attr_accessor :root
 
@@ -38,7 +21,8 @@ class Game
 
   private
 
-  def build_tree(start, _destination, nodes = 0)
+  # Moves are created using a queue of nodes from the original position for breadth first.
+  def build_tree(start, destination, nodes = 0)
     @root = Knight.new(nil, start)
     queue = [@root]
 
@@ -50,28 +34,26 @@ class Game
 
       @possible_moves.each do |move|
         new_position = [position_data[0] + move[0], position_data[1] + move[1]]
+        # Prevent out of bounds
         next unless new_position[0].between?(0, 7) == true && new_position[1].between?(0, 7)
 
-        # array value new_move = Knight.new(position_data, new_position, nil)
+        # Saves the children nodes in arrays
         new_move = Knight.new(current_position, new_position, nil)
         current_position.moves << new_move
         queue.push(new_move)
         nodes += 1
-        return @root if nodes == 3000
-        #  if new_move.data == destination
-        #    return @root
-        #  end
+        # Limit for tree creation
+        return @root if nodes == 4000
       end
-
     end
 
     @root
   end
 
-  # Display tree in level order until destination is found
+  # Guarantees the minimum path to destination using level order traversal to save history of nodes traversed on.
   def level_order(node = @root, destination)
     return nil if node.nil?
-
+    
     move_queue = [node]
     output = []
     finish = false
@@ -82,10 +64,11 @@ class Game
       next if current.moves.nil?
 
       current.moves.each do |move|
+        # Stores output history of nodes traversed
         output << move
-        # data  output << move.data
-        move_queue << move unless current.moves.nil? # || move.data == destination
+        move_queue << move unless current.moves.nil?
 
+        # Stop traversal when destination node is added to output history
         if move.data == destination
           move_queue.clear
           break
@@ -93,40 +76,42 @@ class Game
       end
     end
 
-    # p output
+    # Helper functions to traverse through original tree with destination node.
     correct_node = output.last
-    find(node = @root, correct_node)
-    path = find_parent(node = @root, correct_node)
+    find_parent(node = @root, correct_node)
+    path = return_parents(node = @root, correct_node)
     path.unshift(destination).reverse
   end
 
-  def find_parent(_node = @root, correct_node)
-    return @path if correct_node.parent.nil?
-
-    parent = find(node = @root, correct_node)
-    @path << parent.data
-
-    find_parent(node = @root, parent)
-  end
-
-  # Look for destination node from the end of level order traversal on the original tree
-  # Returns the node from the original tree with access to array value and parent data
-  def find(node = @root, correct_node)
+  # Traverses down the tree until destination node is found and output its parent data. 
+  def find_parent(node = @root, correct_node)
     return nil if node.nil?
 
     return node.parent if correct_node == node
 
     return nil if node.moves.nil?
 
+    # Recursion and each do is used as tree stores its children in heavily nested arrays.  
     node.moves.each do |move|
-      result = find(move, correct_node)
+      result = find_parent(move, correct_node)
       return result unless result.nil?
     end
 
     nil
   end
+
+ # Traverses back up tree saving parent data recursively.
+  def return_parents(node = @root, correct_node)
+    return @path if correct_node.parent.nil?
+
+    parent = find_parent(node = @root, correct_node)
+    @path << parent.data
+
+    return_parents(node = @root, parent)
+  end
 end
 
+# Knight is used to represent tree nodes storing the previous/current board position and possible moves as children.
 class Knight
   attr_accessor :parent, :data, :moves
 
